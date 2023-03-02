@@ -1,4 +1,5 @@
 using app.Models;
+using app.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using Microsoft.EntityFrameworkCore;
@@ -39,10 +40,13 @@ public class AuthController : ControllerBase
 
     private readonly ApplicationDbContext _db;
 
-    public AuthController(IConfiguration configuration, ApplicationDbContext db)
+    private readonly IEmailSender _mailSender;
+
+    public AuthController(IConfiguration configuration, ApplicationDbContext db, IEmailSender mailSender)
     {
         _configuration = configuration;
         _db = db;
+        _mailSender = mailSender;
     }
 
     [HttpPost]
@@ -74,6 +78,9 @@ public class AuthController : ControllerBase
         user = new User { Email = request.Email, Password = BCrypt.Net.BCrypt.HashPassword(request.Password) };
         _db.Users.Add(user);
         _db.SaveChanges();
+
+        _mailSender.SendEmailAsync(user.Email, "Plsase confirm register info.", "Test mail");
+
         return Ok();
     }
 
