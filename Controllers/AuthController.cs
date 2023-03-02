@@ -12,6 +12,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
+using Scriban;
 
 namespace app.Controllers;
 
@@ -36,14 +37,17 @@ public class AuthController : ControllerBase
         public string Password { get; set; } = null!;
     }
 
+    private readonly IWebHostEnvironment _env;
+
     private readonly IConfiguration _configuration;
 
     private readonly ApplicationDbContext _db;
 
     private readonly IEmailSender _mailSender;
 
-    public AuthController(IConfiguration configuration, ApplicationDbContext db, IEmailSender mailSender)
+    public AuthController(IWebHostEnvironment env, IConfiguration configuration, ApplicationDbContext db, IEmailSender mailSender)
     {
+        _env = env;
         _configuration = configuration;
         _db = db;
         _mailSender = mailSender;
@@ -79,7 +83,13 @@ public class AuthController : ControllerBase
         _db.Users.Add(user);
         _db.SaveChanges();
 
-        _mailSender.SendEmailAsync(user.Email, "Plsase confirm register info.", "Test mail");
+        // TODO: Should a separate class
+        string contentRootPath = _env.ContentRootPath;
+        string text = System.IO.File.ReadAllText(@contentRootPath + "/templates/emails/register.txt");
+        var template = Template.Parse(text);
+        var result = template.Render(new { Name = "World" }); 
+
+        _mailSender.SendEmailAsync(user.Email, "Plsase confirm register info.", (string) result);
 
         return Ok();
     }
