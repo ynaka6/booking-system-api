@@ -19,7 +19,7 @@ public class EmailSender : IEmailSender
         _configuration = configuration;
         _logger = logger;
     }
-    
+
     public async Task SendEmailAsync(string to, string subject, string body)
     {
         _logger.LogInformation("Host: " + _configuration["Mail:Host"]);

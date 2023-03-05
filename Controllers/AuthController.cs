@@ -87,9 +87,9 @@ public class AuthController : ControllerBase
         string contentRootPath = _env.ContentRootPath;
         string text = System.IO.File.ReadAllText(@contentRootPath + "/templates/emails/register.txt");
         var template = Template.Parse(text);
-        var result = template.Render(new { Name = "World" }); 
+        var result = template.Render(new { Name = "World" });
 
-        _mailSender.SendEmailAsync(user.Email, "Plsase confirm register info.", (string) result);
+        _mailSender.SendEmailAsync(user.Email, "Plsase confirm register info.", (string)result);
 
         return Ok();
     }
