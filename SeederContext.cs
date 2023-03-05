@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using app.Models;
+using app.Domain.Entities;
 
 public class SeederContext : DbContext
 {

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using BCrypt.Net;
-using app.Models;
+using app.Domain.Entities;
 using app.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
