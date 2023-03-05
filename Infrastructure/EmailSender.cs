@@ -27,10 +27,12 @@ public class EmailSender : IEmailSender
         _logger.LogInformation("Username: " + _configuration["Mail:Username"]);
         _logger.LogInformation("Password: " + _configuration["Mail:Password"]);
         _logger.LogInformation("FromAddress: " + _configuration["Mail:FromAddress"]);
+        _logger.LogInformation("Subject: " + subject);
+        _logger.LogInformation("Body: " + body);
 
         var emailClient = new SmtpClient(_configuration["Mail:Host"], int.Parse(_configuration["Mail:Port"]));
         // emailClient.Credentials = new NetworkCredential(_configuration["Mail:Username"], _configuration["Mail:Password"]);
-        emailClient.EnableSsl = true;
+        // emailClient.EnableSsl = true;
         var message = new MailMessage
         {
             From = new MailAddress(_configuration["Mail:FromAddress"]),
