@@ -1,4 +1,4 @@
-namespace app.Models;
+namespace app.Domain.Entities;
 
 public class BaseModel
 {

@@ -1,4 +1,4 @@
-using app.Models;
+using app.Domain.Entities;
 using app.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
