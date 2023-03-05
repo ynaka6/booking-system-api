@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace app.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class BlogController : ControllerBase
 {
 
