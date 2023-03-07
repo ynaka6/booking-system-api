@@ -22,6 +22,7 @@ dotnet add package Pomelo.EntityFrameworkCore.MySql  --version 7.0.2
 ```
 dotnet ef migrations add InitialCreate
 dotnet ef database update
+dotnet ef database update --context ApplicationDbContext
 ```
 
 

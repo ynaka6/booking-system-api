@@ -34,7 +34,7 @@ public class ForgotPasswordController : ControllerBase
     }
 
     [HttpPost]
-    [Route("send")]
+    [Route("")]
     [AllowAnonymous]
     public async Task<IActionResult> Handle(ForgotPasswordRequest request)
     {
