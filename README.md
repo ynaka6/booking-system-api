@@ -1,5 +1,23 @@
 # Booking System API
 
+## Directory Structure
+
+**TODO**
+
+```
+app/
+├── docs/
+├─┬ src/
+│ ├-┬ Controllers/
+│ │ └── Dockerfile
+| ├-┬ Domain/
+│ │ ├── Entities
+│ │ └── Repository
+| └-┬ Infrastructure/
+│   └── Repository
+└─- tests/ : Unit test
+```
+
 ## Technologies
 
 * [ASP.NET Core 7](https://docs.microsoft.com/en-us/aspnet/core/introduction-to-aspnet-core)
