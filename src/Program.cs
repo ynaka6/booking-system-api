@@ -92,9 +92,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
-app.MapGet("/secret", (ClaimsPrincipal user) => $"Hello {user.Identity?.Name}. My secret")
-    .RequireAuthorization();
 app.MapControllers().RequireAuthorization();
 
 app.Run();
