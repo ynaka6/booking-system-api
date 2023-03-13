@@ -5,13 +5,14 @@ using app.Domain.Entities;
 
 public class ApplicationDbContext : DbContext
 {
-    // static readonly string connectionString = "server=db;database=develop;user=develop;password=secret";
 
     public DbSet<Blog> Blogs { get; set; }
 
     public DbSet<User> Users { get; set; }
 
     public DbSet<PasswordReset> PasswordResets { get; set; }
+
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -29,6 +30,10 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired();
         });
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasOne(r => r.User)
+            .WithMany(u => u.RefreshTokens);
     }
 
     public override int SaveChanges()
