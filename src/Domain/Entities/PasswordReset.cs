@@ -8,10 +8,10 @@ public class PasswordReset : BaseModel
 {
     [Column("id")]
     public int Id { get; set; }
-    [Column("email", TypeName="VARCHAR")]
+    [Column("email", TypeName = "VARCHAR")]
     [StringLength(250)]
     public string Email { get; set; }
-    [Column("token", TypeName="VARCHAR")]
+    [Column("token", TypeName = "VARCHAR")]
     [StringLength(250)]
     public string Token { get; set; }
 }

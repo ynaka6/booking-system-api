@@ -1,3 +1,4 @@
+using app.Application.Services;
 using app.Domain.Entities;
 using app.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
@@ -9,9 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Configuration;
 using Scriban;
 
 namespace app.Controllers;
@@ -39,16 +38,16 @@ public class AuthController : ControllerBase
 
     private readonly IWebHostEnvironment _env;
 
-    private readonly IConfiguration _configuration;
+    private readonly IAuthenticationService _authenticationService;
 
     private readonly ApplicationDbContext _db;
 
     private readonly IEmailSender _mailSender;
 
-    public AuthController(IWebHostEnvironment env, IConfiguration configuration, ApplicationDbContext db, IEmailSender mailSender)
+    public AuthController(IWebHostEnvironment env, IAuthenticationService authenticationService, ApplicationDbContext db, IEmailSender mailSender)
     {
         _env = env;
-        _configuration = configuration;
+        _authenticationService = authenticationService;
         _db = db;
         _mailSender = mailSender;
     }
@@ -64,7 +63,20 @@ public class AuthController : ControllerBase
             return BadRequest("ユーザー名またはパスワードが違います。");
         }
 
-        return Ok(this.GenerateToken(request.Email)); // 認証トークンをレスポンスする
+        var jwtToken = _authenticationService.GenerateToken(user);
+        var refreshToken = _authenticationService.GenerateRefreshToken(ipAddress());
+        user.RefreshTokens.Add(refreshToken);
+
+        removeOldRefreshTokens(user);
+
+        _db.Update(user);
+        _db.SaveChanges();
+
+        return Ok(new
+        {
+            Token = jwtToken,
+            RefreshToken = refreshToken.Token
+        });
     }
 
 
@@ -102,32 +114,20 @@ public class AuthController : ControllerBase
         return Ok(user.Identity?.Name);
     }
 
-
-    private string GenerateToken(String userId)
+    private string ipAddress()
     {
-        var claims = new[] {
-            // 必要な認証情報を追加する
-            new Claim(ClaimTypes.Name, userId)
-        };
-
-        var token = new JwtSecurityToken(
-            _configuration["JWT:ValidIssuer"], // issuer
-            _configuration["JWT:ValidAudience"], // audience
-            claims,
-            expires: DateTime.Now.AddSeconds(10000), // 有効期限
-            signingCredentials: CreateSigningCredentials()
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        // get source ip address for the current request
+        if (Request.Headers.ContainsKey("X-Forwarded-For"))
+            return Request.Headers["X-Forwarded-For"];
+        else
+            return HttpContext.Connection.RemoteIpAddress.MapToIPv4().ToString();
     }
 
-    private SigningCredentials CreateSigningCredentials()
+    private void removeOldRefreshTokens(User user)
     {
-        return new SigningCredentials(
-            new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_configuration["JWT:Secret"])
-            ),
-            SecurityAlgorithms.HmacSha256
-        );
+        // remove old inactive refresh tokens from user based on TTL in app settings
+        user.RefreshTokens.RemoveAll(x =>
+            !x.IsActive &&
+            x.CreatedDate?.AddDays(2) <= DateTime.Now);
     }
 }
