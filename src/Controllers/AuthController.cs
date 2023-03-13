@@ -28,6 +28,12 @@ public class AuthController : ControllerBase
         public string? Password { get; set; }
     }
 
+    public class RefreshRequest
+    {
+        [Required]
+        public string? RefreshToken { get; set; }
+    }
+
     public class RegistrationRequest
     {
         [Required]
@@ -70,6 +76,34 @@ public class AuthController : ControllerBase
         removeOldRefreshTokens(user);
 
         _db.Update(user);
+        _db.SaveChanges();
+
+        return Ok(new
+        {
+            Token = jwtToken,
+            RefreshToken = refreshToken.Token
+        });
+    }
+
+    [HttpPost]
+    [Route("refresh")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Refresh(RefreshRequest request)
+    {
+        var refreshToken = _db.RefreshTokens.Where(r => r.Token == request.RefreshToken).FirstOrDefault<RefreshToken>();
+        if (refreshToken == null || refreshToken.IsExpired)
+        {
+            return NotFound();
+        }
+        var user = _db.Users.Find(refreshToken.UserId);
+        var jwtToken = _authenticationService.GenerateToken(user);
+        var newRefreshToken = _authenticationService.GenerateRefreshToken(ipAddress());
+        user.RefreshTokens.Add(newRefreshToken);
+
+        removeOldRefreshTokens(user);
+
+        _db.Update(user);
+        _db.RefreshTokens.Remove(refreshToken);
         _db.SaveChanges();
 
         return Ok(new
