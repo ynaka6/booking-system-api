@@ -21,16 +21,12 @@ public class AuthenticationService : IAuthenticationService
         _db = db;
     }
 
-    public string GenerateToken(User user)
+    public string GenerateToken(IAuthenticationUser user)
     {
-        var claims = new[] {
-            new Claim(ClaimTypes.Name, user.Email)
-        };
-
         var token = new JwtSecurityToken(
             _configuration["JWT:ValidIssuer"], // issuer
             _configuration["JWT:ValidAudience"], // audience
-            claims,
+            user.Claims(),
             expires: DateTime.Now.AddSeconds(10000), // 有効期限
             signingCredentials: CreateSigningCredentials()
         );
@@ -85,11 +81,13 @@ public class AuthenticationService : IAuthenticationService
         {
             // token is a cryptographically strong random sequence of values
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-            // ensure token is unique by checking against db
-            var tokenIsUnique = !_db.Users.Any(u => u.RefreshTokens.Any(t => t.Token == token));
 
-            if (!tokenIsUnique)
-                return getUniqueToken();
+            // TODO: need check?
+            // ensure token is unique by checking against db
+            // var tokenIsUnique = !_db.Users.Any(u => u.RefreshTokens.Any(t => t.Token == token));
+
+            // if (!tokenIsUnique)
+            //     return getUniqueToken();
 
             return token;
         }

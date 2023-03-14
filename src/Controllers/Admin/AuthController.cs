@@ -1,6 +1,7 @@
 using app.Application.Services;
 using app.Domain.Entities;
 using app.Infrastructure;
+using app.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,11 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using Scriban;
 
-namespace app.Controllers;
+namespace app.Controllers.Admin;
 
 [ApiController]
-[Route("api/[controller]")]
+[Area("admin")]
+[Route("api/[area]/[controller]")]
 public class AuthController : ApiControllerBase
 {
 
@@ -34,28 +36,17 @@ public class AuthController : ApiControllerBase
         public string? RefreshToken { get; set; }
     }
 
-    public class RegistrationRequest
-    {
-        [Required]
-        public string Email { get; set; } = null!;
-        [Required]
-        public string Password { get; set; } = null!;
-    }
-
     private readonly IWebHostEnvironment _env;
 
     private readonly IAuthenticationService _authenticationService;
 
     private readonly ApplicationDbContext _db;
 
-    private readonly IEmailSender _mailSender;
-
-    public AuthController(IWebHostEnvironment env, IAuthenticationService authenticationService, ApplicationDbContext db, IEmailSender mailSender)
+    public AuthController(IWebHostEnvironment env, IAuthenticationService authenticationService, ApplicationDbContext db)
     {
         _env = env;
         _authenticationService = authenticationService;
         _db = db;
-        _mailSender = mailSender;
     }
 
     [HttpPost]
@@ -63,7 +54,7 @@ public class AuthController : ApiControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Login(LoginRequest request)
     {
-        User user = _db.Users.Where(u => u.Email == request.Email).FirstOrDefault<User>();
+        AdminUser user = _db.AdminUsers.Where(u => u.Email == request.Email).FirstOrDefault<AdminUser>();
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
         {
             return BadRequest("ユーザー名またはパスワードが違います。");
@@ -95,7 +86,7 @@ public class AuthController : ApiControllerBase
         {
             return NotFound();
         }
-        var user = _db.Users.Find(refreshToken.UserId);
+        var user = _db.AdminUsers.Find(refreshToken.AdminUserId);
         var jwtToken = _authenticationService.GenerateToken(user);
         var newRefreshToken = _authenticationService.GenerateRefreshToken(ipAddress());
         user.RefreshTokens.Add(newRefreshToken);
@@ -113,33 +104,6 @@ public class AuthController : ApiControllerBase
         });
     }
 
-
-    [HttpPost]
-    [Route("register")]
-    [AllowAnonymous]
-    public async Task<IActionResult> Register(RegistrationRequest request)
-    {
-        var user = _db.Users.Where(u => u.Email == request.Email).FirstOrDefault<User>();
-        if (user != null)
-        {
-            return BadRequest("Exists user");
-        }
-
-        user = new User { Email = request.Email, Password = BCrypt.Net.BCrypt.HashPassword(request.Password) };
-        _db.Users.Add(user);
-        _db.SaveChanges();
-
-        // TODO: Should a separate class
-        string contentRootPath = _env.ContentRootPath;
-        string text = System.IO.File.ReadAllText(@contentRootPath + "/templates/emails/register.txt");
-        var template = Template.Parse(text);
-        var result = template.Render(new { Name = "World" });
-
-        _mailSender.SendEmailAsync(user.Email, "Plsase confirm register info.", (string)result);
-
-        return Ok();
-    }
-
     [HttpDelete]
     [Route("logout")]
     public async Task<IActionResult> Logout(ClaimsPrincipal user)
@@ -148,7 +112,7 @@ public class AuthController : ApiControllerBase
         return Ok(user.Identity?.Name);
     }
 
-    private void removeOldRefreshTokens(User user)
+    private void removeOldRefreshTokens(AdminUser user)
     {
         // remove old inactive refresh tokens from user based on TTL in app settings
         user.RefreshTokens.RemoveAll(x =>

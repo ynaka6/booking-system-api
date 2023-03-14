@@ -4,7 +4,7 @@ namespace app.Application.Services;
 
 public interface IAuthenticationService
 {
-    public string GenerateToken(User user);
+    public string GenerateToken(IAuthenticationUser user);
     // public int? ValidateToken(string token);
     public RefreshToken GenerateRefreshToken(string ipAddress);
 }

@@ -10,7 +10,10 @@ public class RefreshToken : BaseModel
     public int Id { get; set; }
     [Column("user_id")]
     [ForeignKey("User")]
-    public int UserId { get; set; }
+    public int? UserId { get; set; }
+    [Column("admin_user_id")]
+    [ForeignKey("AdminUser")]
+    public int? AdminUserId { get; set; }
     [Column("token", TypeName = "VARCHAR")]
     [StringLength(250)]
     public string Token { get; set; }
@@ -19,7 +22,9 @@ public class RefreshToken : BaseModel
     [Column("created_by_ip")]
     public string CreatedByIp { get; set; }
 
-    public User User { get; set; }
+    public User? User { get; set; }
+
+    public AdminUser? AdminUser { get; set; }
 
 
     public bool IsExpired => DateTime.Now >= ExpiredDate;

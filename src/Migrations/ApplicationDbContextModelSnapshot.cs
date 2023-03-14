@@ -18,6 +18,46 @@ namespace app.Migrations
                 .HasAnnotation("ProductVersion", "7.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("app.Domain.Entities.AdminUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AdminUserRole")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(250)
+                        .HasColumnType("ENUM('Administrator', 'Operator', 'ReadOnly')")
+                        .HasDefaultValue("ReadOnly")
+                        .HasColumnName("admin_user_role");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("VARCHAR")
+                        .HasColumnName("email");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("VARCHAR")
+                        .HasColumnName("password");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("admin_users");
+                });
+
             modelBuilder.Entity("app.Domain.Entities.Blog", b =>
                 {
                     b.Property<int>("Id")
@@ -82,6 +122,10 @@ namespace app.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    b.Property<int?>("AdminUserId")
+                        .HasColumnType("int")
+                        .HasColumnName("admin_user_id");
+
                     b.Property<string>("CreatedByIp")
                         .IsRequired()
                         .HasColumnType("longtext")
@@ -105,11 +149,13 @@ namespace app.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("updated_at");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int")
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AdminUserId");
 
                     b.HasIndex("UserId");
 
@@ -154,13 +200,22 @@ namespace app.Migrations
 
             modelBuilder.Entity("app.Domain.Entities.RefreshToken", b =>
                 {
+                    b.HasOne("app.Domain.Entities.AdminUser", "AdminUser")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("AdminUserId");
+
                     b.HasOne("app.Domain.Entities.User", "User")
                         .WithMany("RefreshTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("AdminUser");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("app.Domain.Entities.AdminUser", b =>
+                {
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("app.Domain.Entities.User", b =>

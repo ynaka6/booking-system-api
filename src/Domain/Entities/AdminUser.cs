@@ -1,3 +1,4 @@
+using app.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
@@ -5,8 +6,8 @@ using System.Security.Claims;
 
 namespace app.Domain.Entities;
 
-[Table("users")]
-public class User : BaseModel, IAuthenticationUser
+[Table("admin_users")]
+public class AdminUser : BaseModel, IAuthenticationUser
 {
     [Column("id")]
     public int Id { get; set; }
@@ -16,8 +17,10 @@ public class User : BaseModel, IAuthenticationUser
     [Column("password", TypeName = "VARCHAR")]
     [StringLength(250)]
     public string Password { get; set; }
-    [Column("email_verify_at")]
-    public DateTime? EmailVerifyDate { get; set; }
+    [Required]
+    [Column("admin_user_role", TypeName = "ENUM('Administrator', 'Operator', 'ReadOnly')")]
+    [StringLength(250)]
+    public AdminUserRole AdminUserRole { get; set; }
 
     [JsonIgnore]
     public List<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
