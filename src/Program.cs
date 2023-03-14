@@ -1,16 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Text;
+using app.Application.Services;
+using app.Domain.Entities;
+using app.Domain.Enums;
+using app.Infrastructure;
+using app.Infrastructure.Services;
+using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
-using BCrypt.Net;
-using app.Application.Services;
-using app.Domain.Entities;
-using app.Infrastructure;
-using app.Infrastructure.Services;
+using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
@@ -32,6 +33,14 @@ using (var context = new SeederContext(connectionString))
         context.Users.Add(new User { Email = "test1@example.com", Password = BCrypt.Net.BCrypt.HashPassword("Pa$$w0rd"), CreatedDate = DateTime.Now, UpdatedDate = DateTime.Now });
     }
     context.SaveChanges();
+
+    var defaultAdminUser = context.AdminUsers.FirstOrDefault(b => b.Email == "admin@example.com");
+    if (defaultAdminUser == null)
+    {
+        context.AdminUsers.Add(new AdminUser { Email = "admin@example.com", Password = BCrypt.Net.BCrypt.HashPassword("Pa$$w0rd"), AdminUserRole = AdminUserRole.Administrator, CreatedDate = DateTime.Now, UpdatedDate = DateTime.Now });
+    }
+    context.SaveChanges();
+
 
     for (int index = 0; index < 5; index++)
     {

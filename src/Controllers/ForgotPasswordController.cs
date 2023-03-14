@@ -9,7 +9,7 @@ namespace app.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ForgotPasswordController : ControllerBase
+public class ForgotPasswordController : ApiControllerBase
 {
 
     public class ForgotPasswordRequest
@@ -17,8 +17,6 @@ public class ForgotPasswordController : ControllerBase
         [Required]
         public string? Email { get; set; }
     }
-
-
 
     private readonly IWebHostEnvironment _env;
 

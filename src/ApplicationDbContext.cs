@@ -1,7 +1,8 @@
+using app.Domain.Entities;
+using app.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using app.Domain.Entities;
 
 public class ApplicationDbContext : DbContext
 {
@@ -9,6 +10,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Blog> Blogs { get; set; }
 
     public DbSet<User> Users { get; set; }
+
+    public DbSet<AdminUser> AdminUsers { get; set; }
 
     public DbSet<PasswordReset> PasswordResets { get; set; }
 
@@ -29,6 +32,13 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired();
+        });
+
+        modelBuilder.Entity<AdminUser>(entity =>
+        {
+            entity.Property(t => t.AdminUserRole)
+                .HasDefaultValue(AdminUserRole.ReadOnly)
+                .HasConversion<string>();
         });
 
         modelBuilder.Entity<RefreshToken>()

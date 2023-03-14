@@ -11,7 +11,7 @@ namespace app.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ResetPasswordController : ControllerBase
+public class ResetPasswordController : ApiControllerBase
 {
 
     public class ResetasswordRequest

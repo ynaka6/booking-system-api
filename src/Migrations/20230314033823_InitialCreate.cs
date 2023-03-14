@@ -16,6 +16,27 @@ namespace app.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "admin_users",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    email = table.Column<string>(type: "VARCHAR(250)", maxLength: 250, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    password = table.Column<string>(type: "VARCHAR(250)", maxLength: 250, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    adminuserrole = table.Column<string>(name: "admin_user_role", type: "ENUM('Administrator', 'Operator', 'ReadOnly')", maxLength: 250, nullable: false, defaultValue: "ReadOnly")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    createdat = table.Column<DateTime>(name: "created_at", type: "datetime(6)", nullable: true),
+                    updatedat = table.Column<DateTime>(name: "updated_at", type: "datetime(6)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_admin_users", x => x.id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "blogs",
                 columns: table => new
                 {
@@ -77,7 +98,8 @@ namespace app.Migrations
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    userid = table.Column<int>(name: "user_id", type: "int", nullable: false),
+                    userid = table.Column<int>(name: "user_id", type: "int", nullable: true),
+                    adminuserid = table.Column<int>(name: "admin_user_id", type: "int", nullable: true),
                     token = table.Column<string>(type: "VARCHAR(250)", maxLength: 250, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     expiredat = table.Column<DateTime>(name: "expired_at", type: "datetime(6)", nullable: true),
@@ -90,13 +112,22 @@ namespace app.Migrations
                 {
                     table.PrimaryKey("PK_refresh_tokens", x => x.id);
                     table.ForeignKey(
+                        name: "FK_refresh_tokens_admin_users_admin_user_id",
+                        column: x => x.adminuserid,
+                        principalTable: "admin_users",
+                        principalColumn: "id");
+                    table.ForeignKey(
                         name: "FK_refresh_tokens_users_user_id",
                         column: x => x.userid,
                         principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_refresh_tokens_admin_user_id",
+                table: "refresh_tokens",
+                column: "admin_user_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_refresh_tokens_user_id",
@@ -115,6 +146,9 @@ namespace app.Migrations
 
             migrationBuilder.DropTable(
                 name: "refresh_tokens");
+
+            migrationBuilder.DropTable(
+                name: "admin_users");
 
             migrationBuilder.DropTable(
                 name: "users");

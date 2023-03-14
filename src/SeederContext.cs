@@ -9,6 +9,8 @@ public class SeederContext : DbContext
 
     public DbSet<User> Users { get; set; }
 
+    public DbSet<AdminUser> AdminUsers { get; set; }
+
     private string _connectionString;
 
     public SeederContext(string connectionString)
